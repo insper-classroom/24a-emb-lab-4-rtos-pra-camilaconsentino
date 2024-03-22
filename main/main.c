@@ -67,32 +67,47 @@ void oled1_btn_led_init(void) {
 void oled_task(void *p) {
     printf("Inicializando Driver\n");
     ssd1306_init();
-
     printf("Inicializando GLX\n");
     ssd1306_t disp;
     gfx_init(&disp, 128, 32);
-
     printf("Inicializando btn and LEDs\n");
     oled1_btn_led_init();
-
+    
     while (1) {
         float distance;
-        if ((xSemaphoreTake(xSemaphore_trigger, pdMS_TO_TICKS(100)) == pdTRUE) ){
-            
-            if (xQueueReceive(xQueue_distance, &distance, pdMS_TO_TICKS(50))){
-                    size_t tamanho_float = sizeof(float);
-                    int tamanho_float_int = (int)tamanho_float;
-                    char distance_str[tamanho_float_int+3];
-                    gfx_clear_buffer(&disp);
-                    snprintf(distance_str, sizeof(distance_str), "%.2f", distance);
-                    gfx_draw_string(&disp, 0, 0, 1, distance_str);
-                    gfx_draw_line(&disp, 15, 27, distance, 27);
-                    gfx_show(&disp);
-                    vTaskDelay(pdMS_TO_TICKS(50));
-            }
-            
-        }
+        
+        if ((xSemaphoreTake(xSemaphore_trigger, pdMS_TO_TICKS(100)) == pdTRUE)) {
+            if (xQueueReceive(xQueue_distance, &distance, pdMS_TO_TICKS(50))) {
+                char distance_str[20];
+                gfx_clear_buffer(&disp);
+                snprintf(distance_str, sizeof(distance_str), "Distancia: %.2f cm", distance); // ajusta o tamanho da string para ficar dentro dos limites
+                gfx_draw_string(&disp, 0, 0, 1, distance_str);
 
+                // Defina a largura máxima e mínima da barra
+                float MAX_DISTANCE = 400.0;
+                float MIN_DISTANCE = 2.0; 
+                int MAX_BAR_WIDTH = 100; // Largura máxima da barra
+                int MIN_BAR_WIDTH = 10;  // Largura mínima da barra
+
+                // Limitando a distância dentro do intervalo válido
+                if (distance < MIN_DISTANCE)
+                    distance = MIN_DISTANCE;
+                else if (distance > MAX_DISTANCE)
+                    distance = MAX_DISTANCE;
+
+                // Calcule a largura da barra com base na distância medida
+                int bar_width; 
+                // Calculando a largura da barra proporcional à distância
+                bar_width = (int)(((distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE)) * MAX_BAR_WIDTH);
+
+                // Desenha a barra na tela
+                gfx_draw_line(&disp, 15, 27, 15 + bar_width, 27);
+
+                // gfx_draw_line(&disp, 15, 27, distance, 27);
+                gfx_show(&disp);
+                vTaskDelay(pdMS_TO_TICKS(50));
+            }
+        }
     }
 }
 
