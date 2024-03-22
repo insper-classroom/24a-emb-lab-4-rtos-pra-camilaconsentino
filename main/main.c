@@ -76,8 +76,8 @@ void oled_task(void *p) {
     while (1) {
         float distance;
         
-        if ((xSemaphoreTake(xSemaphore_trigger, pdMS_TO_TICKS(100)) == pdTRUE)) {
-            if (xQueueReceive(xQueue_distance, &distance, pdMS_TO_TICKS(50))) {
+        if ((xSemaphoreTake(xSemaphore_trigger, 0) == pdTRUE)) {
+            if (xQueueReceive(xQueue_distance, &distance, 0)) {
                 char distance_str[20];
                 gfx_clear_buffer(&disp);
                 snprintf(distance_str, sizeof(distance_str), "Distancia: %.2f cm", distance); // ajusta o tamanho da string para ficar dentro dos limites
@@ -106,7 +106,13 @@ void oled_task(void *p) {
                 // gfx_draw_line(&disp, 15, 27, distance, 27);
                 gfx_show(&disp);
                 vTaskDelay(pdMS_TO_TICKS(50));
+            } 
+             else {
+                gfx_clear_buffer(&disp);
+                gfx_draw_string(&disp, 0, 0, 1, "ERRO");
+                gfx_show(&disp);
             }
+           
         }
     }
 }
