@@ -32,6 +32,9 @@ int SOUND_SPEED = 340;
 // volatile absolute_time_t end_time;
 // criando uma fila
 
+volatile uint64_t start_time;
+volatile uint64_t end_time;
+
 QueueHandle_t xQueue_time;
 SemaphoreHandle_t xSemaphore_trigger;
 QueueHandle_t xQueue_distance;
@@ -72,13 +75,14 @@ void oled_task(void *p) {
     printf("Inicializando btn and LEDs\n");
     oled1_btn_led_init();
 
-    char cnt = 15;
     while (1) {
         float distance;
-        char distance_str[20];
         if ((xSemaphoreTake(xSemaphore_trigger, pdMS_TO_TICKS(100)) == pdTRUE) ){
-
+            
             if (xQueueReceive(xQueue_distance, &distance, pdMS_TO_TICKS(50))){
+                    size_t tamanho_float = sizeof(float);
+                    int tamanho_float_int = (int)tamanho_float;
+                    char distance_str[tamanho_float_int+3];
                     gfx_clear_buffer(&disp);
                     snprintf(distance_str, sizeof(distance_str), "%.2f", distance);
                     gfx_draw_string(&disp, 0, 0, 1, distance_str);
@@ -96,10 +100,8 @@ void oled_task(void *p) {
 
 //DISTANCIA E TIMER
 void pin_callback(uint gpio, uint32_t events) {
-
-    uint64_t start_time;
-    uint64_t end_time;
-
+    // uint64_t start_time;
+    // uint64_t end_time;
 
     if (gpio == ECHO_PIN) {
         if (gpio_get(ECHO_PIN)) {
