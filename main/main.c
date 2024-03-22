@@ -164,10 +164,11 @@ void echo_sensor() {
 
     while (true) {
         if (xQueueReceive(xQueue_time, &duration, pdMS_TO_TICKS(50))) {
-            
             float distance = duration / 58.0;
             xQueueSend(xQueue_distance, &distance, 0);
+            printf("Distancia: %.2f cm\n", distance);
         }
+    
     }
 
 }
