@@ -30,11 +30,6 @@ int SOUND_SPEED = 340;
 
 // volatile absolute_time_t start_time;
 // volatile absolute_time_t end_time;
-
-volatile uint64_t start_time;
-volatile uint64_t end_time;
-
-
 // criando uma fila
 
 QueueHandle_t xQueue_time;
@@ -87,6 +82,7 @@ void oled_task(void *p) {
                     gfx_clear_buffer(&disp);
                     snprintf(distance_str, sizeof(distance_str), "%.2f", distance);
                     gfx_draw_string(&disp, 0, 0, 1, distance_str);
+                    gfx_draw_line(&disp, 15, 27, distance, 27);
                     gfx_show(&disp);
                     vTaskDelay(pdMS_TO_TICKS(50));
             }
@@ -94,13 +90,17 @@ void oled_task(void *p) {
         }
 
     }
-
 }
 
 
 
 //DISTANCIA E TIMER
 void pin_callback(uint gpio, uint32_t events) {
+
+    uint64_t start_time;
+    uint64_t end_time;
+
+
     if (gpio == ECHO_PIN) {
         if (gpio_get(ECHO_PIN)) {
             // ECHO_PIN mudou para alto
@@ -183,34 +183,6 @@ int main() {
     xSemaphore_trigger = xSemaphoreCreateBinary();
     xQueue_time = xQueueCreate(32, sizeof(uint64_t)); // Ajuste conforme necessário
     xQueue_distance = xQueueCreate(32, sizeof(float)); // Ajuste conforme necessário
-
-    
-    
-    // // configura o rtc para iniciar em um momento especifico
-    // datetime_t t = {
-    //     .year  = 2020,
-    //     .month = 01,
-    //     .day   = 13,
-    //     .dotw  = 3, // 0 is Sunday, so 3 is Wednesday
-    //     .hour  = 11,
-    //     .min   = 20,
-    //     .sec   = 00
-    // };
-    // rtc_init();
-    // rtc_set_datetime(&t);
-
-    // // configura o alarme para disparar uma vez a cada segundo
-    // datetime_t alarm = {
-    //     .year  = -1,
-    //     .month = -1,
-    //     .day   = -1,
-    //     .dotw  = -1, 
-    //     .hour  = -1,
-    //     .min   = -1,
-    //     .sec   = 01 
-    // };
-
-    // rtc_set_alarm(&alarm, &alarm_callback);
 
     
 
